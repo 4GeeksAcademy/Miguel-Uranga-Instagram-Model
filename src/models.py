@@ -1,29 +1,56 @@
 import os
 import sys
-from sqlalchemy.orm import declarative_base, Mapped, mapped_column
-from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
+from sqlalchemy import create_engine, Column, ForeignKey, Integer, String, DateTime, Boolean
+from flask_sqlalchemy import SQLAlchemy
 from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(nullable=False)
+class User(Base):
+    # Datos del Usuario
+    __tablename__ = 'user'
+    id_user = Column(Integer, primary_key=True) 
+    name = Column(String(60), unique=False, nullable=False)
+    last_name = Column(String(60), unique=False, nullable=False)
+    email = Column(String(120), unique=True, nullable=False)
+    username = Column(String(60), unique=True, nullable=False)
+    password = Column(String(120), unique=False, nullable=False)
+    password_reset = Column(String(4), unique=True, nullable=True)
+    password_reset_date = Column(String(120), unique=True, nullable=True)
+    phone_number = Column(String(20), unique=True, nullable=False)
+    is_active = Column(Boolean(), unique=False, nullable=False)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
-    id: Mapped[int] = mapped_column(primary_key=True)
-    street_name: Mapped[str]
-    street_number: Mapped[str]
-    post_code: Mapped[str] = mapped_column(nullable=False)
+    
+    #Foreign keys
+    favorites = relationship("Favorites", back_populates = "user", lazy = True)
+    comments = relationship("Comments", back_populates = "user", lazy = True)
+    post = relationship("Post", back_populates = "user", lazy = True)
 
-    def to_dict(self):
-        return {}
+
+class Comments(Base):
+    # Datos del Hotel
+    __tablename__ = 'comments'
+    id_comment = Column(Integer, primary_key=True) 
+    user_comments = Column(Integer, ForeignKey(User.id_user))
+    user = relationship(User)
+    content = Column(String(140), nullable= False)
+    date = Column(DateTime, nullable = False)
+
+class Post(Base):
+    __tablename__ = 'post'
+    id_post = Column(Integer, primary_key=True) 
+    user_post = Column(Integer, ForeignKey(User.id_user))
+    user = relationship(User)
+    content = Column(String(140), nullable= False)
+    image_url = Column(String(140), nullable= False)
+    date = Column(DateTime, nullable = False)
+
+class Favorites(Base):
+    __tablename__ = 'favorites'
+    id_favorites = Column(Integer, primary_key=True) 
+    user_favorites = Column(Integer, ForeignKey(User.id_user))
+    user = relationship(User)
 
 ## Draw from SQLAlchemy base
 try:
